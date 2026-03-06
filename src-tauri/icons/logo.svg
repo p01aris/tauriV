@@ -1,0 +1,64 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgGradient" x1="136" y1="112" x2="892" y2="916" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#1B446A"/>
+      <stop offset="0.55" stop-color="#10263D"/>
+      <stop offset="1" stop-color="#0A1528"/>
+    </linearGradient>
+    <linearGradient id="strokeGradient" x1="180" y1="170" x2="870" y2="860" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#9CF5EB"/>
+      <stop offset="0.55" stop-color="#48E2D4"/>
+      <stop offset="1" stop-color="#2BCF8E"/>
+    </linearGradient>
+    <linearGradient id="fGradient" x1="246" y1="248" x2="574" y2="792" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#CFFAFF"/>
+      <stop offset="1" stop-color="#75D8FF"/>
+    </linearGradient>
+    <linearGradient id="vGradient" x1="548" y1="262" x2="856" y2="770" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#76FFD9"/>
+      <stop offset="1" stop-color="#2ED39A"/>
+    </linearGradient>
+    <filter id="outerGlow" x="78" y="78" width="868" height="868" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <filter id="lineGlow" x="180" y="170" width="700" height="676" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect x="112" y="112" width="800" height="800" rx="190" fill="url(#bgGradient)"/>
+  <rect x="130" y="130" width="764" height="764" rx="172" stroke="url(#strokeGradient)" stroke-width="18"/>
+
+  <g opacity="0.3">
+    <circle cx="262" cy="240" r="6" fill="#6DC4F2"/>
+    <circle cx="334" cy="196" r="5" fill="#6DC4F2"/>
+    <circle cx="420" cy="226" r="4.5" fill="#6DC4F2"/>
+    <circle cx="734" cy="214" r="5.5" fill="#6DC4F2"/>
+    <circle cx="798" cy="266" r="4.5" fill="#6DC4F2"/>
+    <circle cx="782" cy="762" r="5" fill="#6DC4F2"/>
+    <circle cx="222" cy="722" r="5" fill="#6DC4F2"/>
+  </g>
+
+  <g filter="url(#lineGlow)">
+    <path d="M312 290V734" stroke="url(#fGradient)" stroke-width="82" stroke-linecap="round"/>
+    <path d="M312 292H560" stroke="url(#fGradient)" stroke-width="82" stroke-linecap="round"/>
+    <path d="M312 510H520" stroke="url(#fGradient)" stroke-width="82" stroke-linecap="round"/>
+    <path d="M586 292L720 734L844 292" stroke="url(#vGradient)" stroke-width="82" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <g filter="url(#outerGlow)">
+    <circle cx="312" cy="292" r="20" fill="#C9FEFF"/>
+    <circle cx="560" cy="292" r="17" fill="#98EBFF"/>
+    <circle cx="520" cy="510" r="16" fill="#8FE3FF"/>
+    <circle cx="720" cy="734" r="18" fill="#99FFD8"/>
+    <circle cx="844" cy="292" r="18" fill="#7EFFD2"/>
+  </g>
+</svg>

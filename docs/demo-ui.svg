@@ -1,0 +1,129 @@
+<svg width="1400" height="820" viewBox="0 0 1400 820" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1400" y2="820" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#18395C"/>
+      <stop offset="0.5" stop-color="#0F243B"/>
+      <stop offset="1" stop-color="#08121F"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#16324F" stop-opacity="0.95"/>
+      <stop offset="1" stop-color="#0B1828" stop-opacity="0.92"/>
+    </linearGradient>
+    <linearGradient id="nodeFill" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#18384A"/>
+      <stop offset="1" stop-color="#0B1B2D"/>
+    </linearGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <style>
+      .title { font: 700 38px "Space Grotesk", "Segoe UI", sans-serif; fill: #E9F6FF; }
+      .subtitle { font: 500 18px "Space Grotesk", "Segoe UI", sans-serif; fill: #9FC2E2; }
+      .panel-title { font: 700 18px "Space Grotesk", "Segoe UI", sans-serif; fill: #DDF0FF; letter-spacing: 0.08em; }
+      .label { font: 600 13px "Space Grotesk", "Segoe UI", sans-serif; fill: #8FB2D2; letter-spacing: 0.08em; }
+      .text { font: 500 15px "Space Grotesk", "Segoe UI", sans-serif; fill: #D7ECFF; }
+      .code { font: 500 14px "IBM Plex Mono", "Menlo", monospace; fill: #BDE7FF; }
+      .small { font: 500 12px "Space Grotesk", "Segoe UI", sans-serif; fill: #86AACE; }
+    </style>
+  </defs>
+
+  <rect width="1400" height="820" rx="0" fill="url(#bg)"/>
+
+  <g opacity="0.45">
+    <circle cx="80" cy="90" r="2" fill="#4EA2D8"/>
+    <circle cx="180" cy="150" r="2" fill="#4EA2D8"/>
+    <circle cx="310" cy="100" r="2" fill="#4EA2D8"/>
+    <circle cx="430" cy="170" r="2" fill="#4EA2D8"/>
+    <circle cx="560" cy="90" r="2" fill="#4EA2D8"/>
+    <circle cx="680" cy="145" r="2" fill="#4EA2D8"/>
+    <circle cx="840" cy="95" r="2" fill="#4EA2D8"/>
+    <circle cx="980" cy="160" r="2" fill="#4EA2D8"/>
+    <circle cx="1120" cy="105" r="2" fill="#4EA2D8"/>
+    <circle cx="1260" cy="165" r="2" fill="#4EA2D8"/>
+  </g>
+
+  <rect x="28" y="24" width="1344" height="100" rx="16" fill="url(#panel)" stroke="#77A9D31A" stroke-width="2"/>
+  <text x="56" y="76" class="title">Flow Verilog Studio</text>
+  <text x="56" y="104" class="subtitle">Design Logic Visually, Compile Hardware Reliably.</text>
+
+  <rect x="28" y="140" width="1344" height="52" rx="12" fill="#0A1A2DCC" stroke="#77A9D33D" stroke-width="2"/>
+  <text x="52" y="173" class="small">Status: Editor ready. Scan Dir: /Volumes/External/src/tauriV/src/verilog_module</text>
+
+  <rect x="28" y="208" width="300" height="584" rx="16" fill="url(#panel)" stroke="#77A9D33D" stroke-width="2"/>
+  <text x="54" y="246" class="panel-title">PROJECT SETUP</text>
+
+  <text x="54" y="280" class="label">PROJECT PATH</text>
+  <rect x="54" y="290" width="248" height="36" rx="10" fill="#061323E6" stroke="#91C6EE59"/>
+  <text x="66" y="313" class="code">/Volumes/External/src/tauriV</text>
+
+  <text x="54" y="354" class="label">VERILOG SCAN FOLDER</text>
+  <rect x="54" y="364" width="248" height="36" rx="10" fill="#061323E6" stroke="#91C6EE59"/>
+  <text x="66" y="387" class="code">src/verilog_module</text>
+
+  <text x="54" y="428" class="label">TOP MODULE NAME</text>
+  <rect x="54" y="438" width="248" height="36" rx="10" fill="#061323E6" stroke="#91C6EE59"/>
+  <text x="66" y="461" class="code">TopLevelModule</text>
+
+  <rect x="54" y="492" width="248" height="40" rx="12" fill="#1CB69AD9" stroke="#80F5E5A6"/>
+  <text x="132" y="517" class="text" fill="#03141D">Scan Modules</text>
+
+  <text x="54" y="568" class="panel-title">NODE LIBRARY</text>
+  <rect x="54" y="582" width="248" height="188" rx="12" fill="#061323B3" stroke="#91C6EE33"/>
+  <text x="72" y="613" class="text">▾ Built-in Library (4)</text>
+  <text x="92" y="640" class="small">+ Input</text>
+  <text x="92" y="665" class="small">+ Output</text>
+  <text x="92" y="690" class="small">+ AndGate</text>
+  <text x="92" y="715" class="small">+ OrGate</text>
+  <text x="72" y="748" class="text">▸ Loaded Modules (2)</text>
+
+  <rect x="344" y="208" width="694" height="584" rx="16" fill="url(#panel)" stroke="#77A9D33D" stroke-width="2"/>
+  <text x="372" y="246" class="panel-title">GRAPH EDITOR</text>
+
+  <rect x="368" y="266" width="646" height="500" rx="14" fill="#061122A6" stroke="#7FB9E640"/>
+
+  <rect x="438" y="328" width="288" height="214" rx="20" fill="url(#nodeFill)" stroke="#5AF1D4" stroke-width="3"/>
+  <line x1="438" y1="392" x2="726" y2="392" stroke="#8BCDF655"/>
+  <line x1="438" y1="460" x2="726" y2="460" stroke="#8BCDF633"/>
+  <text x="474" y="374" class="title" font-size="22">input_5</text>
+  <text x="612" y="440" class="text">Out</text>
+  <rect x="652" y="412" width="56" height="34" rx="17" fill="#0A2A42" stroke="#5CA8DEA6"/>
+  <text x="668" y="435" class="code">1b</text>
+  <circle cx="726" cy="428" r="13" fill="#8CFCE7" filter="url(#softGlow)"/>
+  <circle cx="726" cy="428" r="10" fill="#43D9B8"/>
+  <circle cx="726" cy="428" r="6" fill="#B8FFF2" opacity="0.85"/>
+
+  <rect x="470" y="482" width="224" height="42" rx="13" fill="#041021D9" stroke="#6FB4E466"/>
+  <text x="490" y="509" class="code">in_5</text>
+
+  <path d="M739 428 C 810 428, 838 526, 902 526" stroke="#41D59C" stroke-width="8" stroke-linecap="round" stroke-dasharray="16 14"/>
+  <polygon points="904,526 878,538 878,514" fill="#5ED29C"/>
+
+  <rect x="846" y="340" width="130" height="86" rx="14" fill="#0D2035" stroke="#6AA4D5AA"/>
+  <text x="874" y="372" class="small">AND</text>
+  <circle cx="862" cy="372" r="8" fill="#61E5C8"/>
+  <circle cx="862" cy="394" r="8" fill="#61E5C8"/>
+  <circle cx="962" cy="383" r="8" fill="#61E5C8"/>
+
+  <rect x="1054" y="208" width="318" height="584" rx="16" fill="url(#panel)" stroke="#77A9D33D" stroke-width="2"/>
+  <text x="1082" y="246" class="panel-title">OUTPUT</text>
+
+  <text x="1082" y="280" class="label">DIAGNOSTICS (0)</text>
+  <rect x="1082" y="292" width="262" height="68" rx="12" fill="#061323B3" stroke="#91C6EE33"/>
+  <text x="1100" y="330" class="small">No errors. Compile is clean.</text>
+
+  <text x="1082" y="392" class="label">VERILOG</text>
+  <rect x="1082" y="404" width="262" height="180" rx="12" fill="#041122E6" stroke="#91C6EE33"/>
+  <text x="1098" y="436" class="code">module TopLevelModule(...);</text>
+  <text x="1098" y="462" class="code">assign out_0 = in_0 &amp; in_1;</text>
+  <text x="1098" y="488" class="code">endmodule</text>
+
+  <text x="1082" y="620" class="label">SIMULATION LOG</text>
+  <rect x="1082" y="632" width="262" height="138" rx="12" fill="#041122E6" stroke="#91C6EE33"/>
+  <text x="1098" y="664" class="code"># 10 in_0 = 1</text>
+  <text x="1098" y="690" class="code"># 20 in_0 = 0</text>
+  <text x="1098" y="716" class="code">Simulation finished.</text>
+</svg>
