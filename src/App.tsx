@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AreaExtensions } from "rete-area-plugin";
+import { open as openDialog } from "@tauri-apps/plugin-dialog";
+import { openPath } from "@tauri-apps/plugin-opener";
 import { createEditor } from "./editor";
 import {
   isSavedGraphDocument,
@@ -61,6 +63,35 @@ function resolveScanDirectory(projectPath: string, scanPath: string): string {
   }
 
   return joinPath(trimmedProjectPath, trimmedScanPath);
+}
+
+function normalizePathForCompare(path: string): string {
+  return path.replace(/\\/g, "/").replace(/\/+$/, "");
+}
+
+function toRelativePathIfInside(basePath: string, targetPath: string): string | null {
+  const normalizedBase = normalizePathForCompare(basePath);
+  const normalizedTarget = normalizePathForCompare(targetPath);
+  if (!normalizedBase || !normalizedTarget) {
+    return null;
+  }
+
+  const baseComparable = /^[a-zA-Z]:/.test(normalizedBase)
+    ? normalizedBase.toLowerCase()
+    : normalizedBase;
+  const targetComparable = /^[a-zA-Z]:/.test(normalizedTarget)
+    ? normalizedTarget.toLowerCase()
+    : normalizedTarget;
+
+  if (targetComparable === baseComparable) {
+    return ".";
+  }
+
+  if (!targetComparable.startsWith(`${baseComparable}/`)) {
+    return null;
+  }
+
+  return normalizedTarget.slice(normalizedBase.length + 1);
 }
 
 function App() {
@@ -247,6 +278,70 @@ endmodule`
     await loadModules(scanDirectory);
   };
 
+  const pickFolder = useCallback(
+    async (initialPath: string): Promise<string | null> => {
+      try {
+        const selected = await openDialog({
+          directory: true,
+          multiple: false,
+          defaultPath: initialPath.trim() || undefined
+        });
+        return typeof selected === "string" && selected.trim()
+          ? selected.trim()
+          : null;
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "Failed to open folder picker.";
+        setLoadingError(message);
+        setStatusMessage("Folder picker failed.");
+        return null;
+      }
+    },
+    []
+  );
+
+  const handlePickProjectFolder = useCallback(async () => {
+    const selectedPath = await pickFolder(projectPath);
+    if (!selectedPath) {
+      return;
+    }
+    setProjectPath(selectedPath);
+    setLoadingError("");
+    setStatusMessage(`Project folder selected: ${selectedPath}`);
+    try {
+      await openPath(selectedPath);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to open project folder.";
+      setLoadingError(message);
+      setStatusMessage("Open folder failed.");
+    }
+  }, [pickFolder, projectPath]);
+
+  const handlePickScanFolder = useCallback(async () => {
+    const selectedPath = await pickFolder(scanDirectory);
+    if (!selectedPath) {
+      return;
+    }
+
+    const relativePath = toRelativePathIfInside(projectPath, selectedPath);
+    setScanFolderPath(relativePath ?? selectedPath);
+    setLoadingError("");
+    setStatusMessage(
+      `Scan folder selected: ${relativePath ?? selectedPath}`
+    );
+    try {
+      await openPath(selectedPath);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Failed to open scan folder.";
+      setLoadingError(message);
+      setStatusMessage("Open folder failed.");
+    }
+  }, [pickFolder, projectPath, scanDirectory]);
+
   const handleAddNode = useCallback(async (nodeTypeName: string) => {
     if (!editorRef.current) {
       return;
@@ -320,7 +415,12 @@ endmodule`
     const { editor, area } = editorRef.current;
     const saved = serializeEditorGraph(editor, area, {
       moduleName: topModuleName.trim() || DEFAULT_TOP_MODULE,
-      moduleSignatures: getRegisteredModuleSignatures()
+      moduleSignatures: getRegisteredModuleSignatures(),
+      projectSetup: {
+        projectPath: projectPath.trim(),
+        scanFolderPath: scanFolderPath.trim(),
+        topModuleName: topModuleName.trim() || DEFAULT_TOP_MODULE
+      }
     });
 
     const blob = new Blob([JSON.stringify(saved, null, 2)], {
@@ -341,7 +441,7 @@ endmodule`
     setStatusMessage(
       `Graph saved (${saved.nodes.length} nodes, ${saved.connections.length} connections).`
     );
-  }, [topModuleName]);
+  }, [projectPath, scanFolderPath, topModuleName]);
 
   const handleRequestLoadGraph = useCallback(() => {
     fileInputRef.current?.click();
@@ -362,9 +462,20 @@ endmodule`
           throw new Error("Invalid graph file format.");
         }
 
+        if (parsed.projectSetup?.projectPath) {
+          setProjectPath(parsed.projectSetup.projectPath);
+        }
+        if (parsed.projectSetup?.scanFolderPath) {
+          setScanFolderPath(parsed.projectSetup.scanFolderPath);
+        }
+
         replaceModuleNodeTypes(parsed.moduleSignatures ?? []);
         setNodeTypeNames(listNodeTypeNames());
-        setTopModuleName(parsed.moduleName || DEFAULT_TOP_MODULE);
+        setTopModuleName(
+          parsed.projectSetup?.topModuleName ||
+            parsed.moduleName ||
+            DEFAULT_TOP_MODULE
+        );
 
         const { editor, area } = editorRef.current;
         const restoreResult = await restoreEditorGraph(
@@ -481,21 +592,45 @@ endmodule`
             <h2 className="panel-title">Project Setup</h2>
             <label className="field">
               <span className="field-label">Project Path</span>
-              <input
-                className="field-input"
-                value={projectPath}
-                onChange={(event) => setProjectPath(event.target.value)}
-                placeholder="/absolute/project/path"
-              />
+              <div className="field-input-row">
+                <input
+                  className="field-input"
+                  value={projectPath}
+                  onChange={(event) => setProjectPath(event.target.value)}
+                  placeholder="/absolute/project/path"
+                />
+                <button
+                  className="btn btn-ghost field-inline-btn"
+                  type="button"
+                  onClick={() => {
+                    void handlePickProjectFolder();
+                  }}
+                  title="Pick project folder"
+                >
+                  Browse
+                </button>
+              </div>
             </label>
             <label className="field">
               <span className="field-label">Verilog Scan Folder</span>
-              <input
-                className="field-input"
-                value={scanFolderPath}
-                onChange={(event) => setScanFolderPath(event.target.value)}
-                placeholder="src/verilog_module"
-              />
+              <div className="field-input-row">
+                <input
+                  className="field-input"
+                  value={scanFolderPath}
+                  onChange={(event) => setScanFolderPath(event.target.value)}
+                  placeholder="src/verilog_module"
+                />
+                <button
+                  className="btn btn-ghost field-inline-btn"
+                  type="button"
+                  onClick={() => {
+                    void handlePickScanFolder();
+                  }}
+                  title="Pick scan folder"
+                >
+                  Browse
+                </button>
+              </div>
             </label>
             <label className="field">
               <span className="field-label">Top Module Name</span>
@@ -646,7 +781,7 @@ endmodule`
 
           <div className="panel-group">
             <h2 className="panel-title">Generated Verilog</h2>
-            <pre className="code-box">
+            <pre className="code-box generated-verilog-box">
               <code>
                 {generatedCode || "// Compile graph to see generated Verilog"}
               </code>

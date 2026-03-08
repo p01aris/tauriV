@@ -1,5 +1,7 @@
 import { ClassicPreset } from 'rete';
+import type { GateGraphNode } from '../core/graph/types';
 import { socket } from './socket';
+import { getNodeBaseInfo, type ReteNodeGraphConverter } from './reteGraphConverter';
 
 export class AndGateNode extends ClassicPreset.Node {
     nodeKind = 'and' as const;
@@ -23,3 +25,22 @@ export class AndGateNode extends ClassicPreset.Node {
         return `${inputs.a} & ${inputs.b}`;
     }
 }
+
+export const andGateNodeGraphConverter: ReteNodeGraphConverter = {
+    toGraphNode(node, helpers) {
+        if (node.nodeKind !== 'and') {
+            return null;
+        }
+
+        const { id, label, instanceName } = getNodeBaseInfo(node);
+        return {
+            id,
+            kind: 'and',
+            label,
+            instanceName,
+            width: helpers.readNumberControl(node, 'width', 1),
+            inputPorts: ['a', 'b'],
+            outputPort: 'y'
+        } satisfies GateGraphNode;
+    }
+};

@@ -1,5 +1,7 @@
 import { ClassicPreset } from 'rete';
+import type { InputGraphNode } from '../core/graph/types';
 import { socket } from './socket';
+import { getNodeBaseInfo, type ReteNodeGraphConverter } from './reteGraphConverter';
 
 export class InputNode extends ClassicPreset.Node {
     nodeKind = 'input' as const;
@@ -18,3 +20,23 @@ export class InputNode extends ClassicPreset.Node {
         this.addOutput('out', new ClassicPreset.Output(socket, 'Out'));
     }
 }
+
+export const inputNodeGraphConverter: ReteNodeGraphConverter = {
+    toGraphNode(node, helpers) {
+        if (node.nodeKind !== 'input') {
+            return null;
+        }
+
+        const { id, label, instanceName } = getNodeBaseInfo(node);
+        const defaultName = node.initialName ?? `in_${id}`;
+        return {
+            id,
+            kind: 'input',
+            label,
+            instanceName,
+            name: helpers.readTextControl(node, 'name', defaultName),
+            width: helpers.readNumberControl(node, 'width', 1),
+            outputPort: 'out'
+        } satisfies InputGraphNode;
+    }
+};

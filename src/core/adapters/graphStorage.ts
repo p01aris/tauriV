@@ -20,13 +20,20 @@ export interface SavedGraphConnection {
   targetInput: string;
 }
 
+export interface SavedProjectSetup {
+  projectPath: string;
+  scanFolderPath: string;
+  topModuleName: string;
+}
+
 export interface SavedGraphDocument {
-  version: 1;
+  version: 1 | 2;
   moduleName: string;
   moduleSignatures: ModuleSignature[];
   nodes: SavedGraphNode[];
   connections: SavedGraphConnection[];
   createdAt: string;
+  projectSetup?: SavedProjectSetup;
 }
 
 export interface RestoreGraphResult {
@@ -75,6 +82,7 @@ export function serializeEditorGraph(
   options: {
     moduleName: string;
     moduleSignatures: ModuleSignature[];
+    projectSetup?: SavedProjectSetup;
   }
 ): SavedGraphDocument {
   const nodes = editor
@@ -122,12 +130,13 @@ export function serializeEditorGraph(
     });
 
   return {
-    version: 1,
+    version: 2,
     moduleName: options.moduleName,
     moduleSignatures: options.moduleSignatures,
     nodes,
     connections,
-    createdAt: new Date().toISOString()
+    createdAt: new Date().toISOString(),
+    projectSetup: options.projectSetup
   };
 }
 
@@ -217,7 +226,7 @@ export function isSavedGraphDocument(
   }
   const candidate = value as Partial<SavedGraphDocument>;
   return (
-    candidate.version === 1 &&
+    (candidate.version === 1 || candidate.version === 2) &&
     typeof candidate.moduleName === "string" &&
     Array.isArray(candidate.nodes) &&
     Array.isArray(candidate.connections) &&

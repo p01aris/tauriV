@@ -119,8 +119,17 @@ body {
 
 .panel-left,
 .panel-right {
-  overflow: auto;
   padding: 14px;
+}
+
+.panel-left {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.panel-right {
+  overflow: auto;
 }
 
 .panel-center {
@@ -172,6 +181,24 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+}
+
+.field-input-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-input-row .field-input {
+  flex: 1;
+  min-width: 0;
+}
+
+.field-inline-btn {
+  flex: 0 0 auto;
+  padding: 8px 10px;
+  font-size: 0.76rem;
+  white-space: nowrap;
 }
 
 .field-label {
@@ -247,7 +274,11 @@ body {
 }
 
 .node-library-group {
-  max-height: clamp(260px, 44vh, 520px);
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
@@ -255,14 +286,37 @@ body {
   border: 1px solid rgba(147, 198, 230, 0.18);
   border-radius: 10px;
   background: rgba(5, 17, 29, 0.62);
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
 }
 
 .tree-scroll {
-  max-height: clamp(220px, 36vh, 420px);
-  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  max-height: none;
+  overflow-y: scroll;
   overflow-x: hidden;
   padding: 8px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(66, 232, 186, 0.72) rgba(10, 25, 39, 0.9);
+}
+
+.tree-scroll::-webkit-scrollbar {
+  width: 10px;
+}
+
+.tree-scroll::-webkit-scrollbar-track {
+  background: rgba(10, 25, 39, 0.9);
+  border-radius: 999px;
+}
+
+.tree-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(66, 232, 186, 0.92), rgba(37, 178, 225, 0.9));
+  border-radius: 999px;
+  border: 2px solid rgba(10, 25, 39, 0.95);
 }
 
 .tree-root,
@@ -637,6 +691,35 @@ body {
   margin-top: 8px;
   color: #ffd9de;
   border-color: rgba(255, 143, 159, 0.35);
+}
+
+.generated-verilog-box {
+  max-height: clamp(220px, 34vh, 420px);
+  overflow: scroll;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(58, 230, 181, 0.72) rgba(11, 27, 42, 0.88);
+}
+
+.generated-verilog-box code {
+  display: block;
+  min-width: max-content;
+  white-space: pre;
+}
+
+.generated-verilog-box::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.generated-verilog-box::-webkit-scrollbar-track {
+  background: rgba(11, 27, 42, 0.88);
+  border-radius: 999px;
+}
+
+.generated-verilog-box::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(58, 230, 181, 0.9), rgba(35, 174, 224, 0.88));
+  border-radius: 999px;
+  border: 2px solid rgba(11, 27, 42, 0.92);
 }
 
 .text-error {

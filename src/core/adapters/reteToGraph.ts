@@ -1,10 +1,31 @@
 import type { GraphDocument, GraphNode } from '../graph/types';
 import type { ModuleSignature } from '../registry/types';
+import { andGateNodeGraphConverter } from '../../node/AndGateNode';
+import { concatNodeGraphConverter } from '../../node/ConcatNode';
+import { divideNodeGraphConverter } from '../../node/DivideNode';
+import { inputNodeGraphConverter } from '../../node/InputNode';
+import { moduleNodeGraphConverter } from '../../node/ModuleNode';
+import { orGateNodeGraphConverter } from '../../node/OrGateNode';
+import { outputNodeGraphConverter } from '../../node/OutputNode';
+import type {
+  ReteNodeGraphConverter,
+  ReteNodeReadHelpers
+} from '../../node/reteGraphConverter';
 
 interface ReteToGraphOptions {
   moduleName?: string;
   moduleSignatures?: ModuleSignature[];
 }
+
+const nodeConverters: ReteNodeGraphConverter[] = [
+  inputNodeGraphConverter,
+  outputNodeGraphConverter,
+  andGateNodeGraphConverter,
+  orGateNodeGraphConverter,
+  concatNodeGraphConverter,
+  divideNodeGraphConverter,
+  moduleNodeGraphConverter
+];
 
 function readNumberControl(node: any, controlName: string, fallback: number): number {
   const raw = Number((node.controls?.[controlName] as any)?.value);
@@ -22,102 +43,21 @@ function readTextControl(node: any, controlName: string, fallback: string): stri
   return raw.trim();
 }
 
+const readHelpers: ReteNodeReadHelpers = {
+  readNumberControl,
+  readTextControl
+};
+
 function nodeToGraphNode(node: any): GraphNode {
+  for (const converter of nodeConverters) {
+    const converted = converter.toGraphNode(node, readHelpers);
+    if (converted) {
+      return converted;
+    }
+  }
+
   const nodeKind = node.nodeKind as string | undefined;
   const id = String(node.id);
-  const label = String(node.label ?? node.id);
-  const instanceName = String(node.varName ?? node.label ?? node.id);
-
-  if (nodeKind === 'input') {
-    const defaultName = node.initialName ?? `in_${id}`;
-    return {
-      id,
-      kind: 'input',
-      label,
-      instanceName,
-      name: readTextControl(node, 'name', defaultName),
-      width: readNumberControl(node, 'width', 1),
-      outputPort: 'out'
-    };
-  }
-
-  if (nodeKind === 'output') {
-    const defaultName = node.initialName ?? `out_${id}`;
-    return {
-      id,
-      kind: 'output',
-      label,
-      instanceName,
-      name: readTextControl(node, 'name', defaultName),
-      width: readNumberControl(node, 'width', 1),
-      inputPort: 'in'
-    };
-  }
-
-  if (nodeKind === 'and' || nodeKind === 'or') {
-    return {
-      id,
-      kind: nodeKind,
-      label,
-      instanceName,
-      width: readNumberControl(node, 'width', 1),
-      inputPorts: ['a', 'b'],
-      outputPort: 'y'
-    };
-  }
-
-  if (nodeKind === 'concat') {
-    return {
-      id,
-      kind: 'concat',
-      label,
-      instanceName,
-      leftWidth: readNumberControl(node, 'leftWidth', 1),
-      rightWidth: readNumberControl(node, 'rightWidth', 1),
-      inputPorts: ['a', 'b'],
-      outputPort: 'y'
-    };
-  }
-
-  if (nodeKind === 'divide') {
-    return {
-      id,
-      kind: 'divide',
-      label,
-      instanceName,
-      highWidth: readNumberControl(node, 'highWidth', 1),
-      lowWidth: readNumberControl(node, 'lowWidth', 1),
-      inputPort: 'in',
-      outputPorts: ['hi', 'lo']
-    };
-  }
-
-  if (nodeKind === 'module') {
-    const inputs =
-      node.verilogInputs?.map((port: any) => ({
-        name: String(port.name),
-        width: Number(port.width) || 1,
-        signed: Boolean(port.signed)
-      })) ?? [];
-
-    const outputs =
-      node.verilogOutputs?.map((port: any) => ({
-        name: String(port.name),
-        width: Number(port.width) || 1,
-        signed: Boolean(port.signed)
-      })) ?? [];
-
-    return {
-      id,
-      kind: 'module',
-      label,
-      instanceName,
-      moduleName: String(node.verilogModuleName),
-      inputs,
-      outputs
-    };
-  }
-
   throw new Error(`Unsupported node kind "${nodeKind ?? 'unknown'}" on node "${id}"`);
 }
 
