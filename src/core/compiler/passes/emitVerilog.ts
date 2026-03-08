@@ -6,13 +6,21 @@ function getNodeOutputPorts(node: GraphNode): string[] {
   if (node.kind === 'input') {
     return [node.outputPort];
   }
-  if (node.kind === 'and' || node.kind === 'or') {
+  if (node.kind === 'and' || node.kind === 'or' || node.kind === 'concat') {
     return [node.outputPort];
+  }
+  if (node.kind === 'divide') {
+    return [...node.outputPorts];
   }
   if (node.kind === 'module') {
     return node.outputs.map((port) => port.name);
   }
   return [];
+}
+
+function zeroLiteral(width: number): string {
+  const normalized = Number.isFinite(width) && width > 1 ? Math.floor(width) : 1;
+  return `${normalized}'b0`;
 }
 
 export function emitVerilog(graph: GraphDocument, netMap: NetMap): string {
@@ -41,6 +49,10 @@ export function emitVerilog(graph: GraphDocument, netMap: NetMap): string {
       let width = 1;
       if (node.kind === 'and' || node.kind === 'or') {
         width = node.width;
+      } else if (node.kind === 'concat') {
+        width = node.leftWidth + node.rightWidth;
+      } else if (node.kind === 'divide') {
+        width = portName === node.outputPorts[0] ? node.highWidth : node.lowWidth;
       } else if (node.kind === 'module') {
         const port = node.outputs.find((item) => item.name === portName);
         width = port?.width ?? 1;
@@ -59,36 +71,59 @@ export function emitVerilog(graph: GraphDocument, netMap: NetMap): string {
     });
   });
 
-  const getInputSignal = (nodeId: string, portName: string): string => {
+  const getInputSignal = (nodeId: string, portName: string, expectedWidth = 1): string => {
     const source = edgeByTarget.get(makePortKey(nodeId, portName));
     if (!source) {
-      return "1'b0";
+      return zeroLiteral(expectedWidth);
     }
 
     const signal = netMap[makePortKey(source.sourceNodeId, source.sourcePort)];
-    return signal ?? "1'b0";
+    return signal ?? zeroLiteral(expectedWidth);
   };
 
   const assignments: string[] = [];
   graph.nodes.forEach((node) => {
     if (node.kind === 'and') {
-      const a = getInputSignal(node.id, node.inputPorts[0]);
-      const b = getInputSignal(node.id, node.inputPorts[1]);
+      const a = getInputSignal(node.id, node.inputPorts[0], node.width);
+      const b = getInputSignal(node.id, node.inputPorts[1], node.width);
       const y = netMap[makePortKey(node.id, node.outputPort)];
       assignments.push(`assign ${y} = ${a} & ${b};`);
       return;
     }
 
     if (node.kind === 'or') {
-      const a = getInputSignal(node.id, node.inputPorts[0]);
-      const b = getInputSignal(node.id, node.inputPorts[1]);
+      const a = getInputSignal(node.id, node.inputPorts[0], node.width);
+      const b = getInputSignal(node.id, node.inputPorts[1], node.width);
       const y = netMap[makePortKey(node.id, node.outputPort)];
       assignments.push(`assign ${y} = ${a} | ${b};`);
       return;
     }
 
+    if (node.kind === 'concat') {
+      const a = getInputSignal(node.id, node.inputPorts[0], node.leftWidth);
+      const b = getInputSignal(node.id, node.inputPorts[1], node.rightWidth);
+      const y = netMap[makePortKey(node.id, node.outputPort)];
+      assignments.push(`assign ${y} = {${a}, ${b}};`);
+      return;
+    }
+
+    if (node.kind === 'divide') {
+      const sourceWidth = node.highWidth + node.lowWidth;
+      const input = getInputSignal(node.id, node.inputPort, sourceWidth);
+      const highPort = node.outputPorts[0];
+      const lowPort = node.outputPorts[1];
+      const highSignal = netMap[makePortKey(node.id, highPort)];
+      const lowSignal = netMap[makePortKey(node.id, lowPort)];
+      const highMsb = sourceWidth - 1;
+      const highLsb = node.lowWidth;
+      const lowMsb = node.lowWidth - 1;
+      assignments.push(`assign ${highSignal} = ${input}[${highMsb}:${highLsb}];`);
+      assignments.push(`assign ${lowSignal} = ${input}[${lowMsb}:0];`);
+      return;
+    }
+
     if (node.kind === 'output') {
-      const source = getInputSignal(node.id, node.inputPort);
+      const source = getInputSignal(node.id, node.inputPort, node.width);
       const outputName = sanitizeIdentifier(node.name, `out_${node.id}`);
       assignments.push(`assign ${outputName} = ${source};`);
       return;
@@ -98,7 +133,7 @@ export function emitVerilog(graph: GraphDocument, netMap: NetMap): string {
       const params: string[] = [];
 
       node.inputs.forEach((port) => {
-        const source = getInputSignal(node.id, port.name);
+        const source = getInputSignal(node.id, port.name, port.width);
         params.push(`.${port.name}(${source})`);
       });
 

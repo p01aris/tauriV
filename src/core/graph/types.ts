@@ -1,6 +1,13 @@
 import type { ModuleSignature } from '../registry/types';
 
-export type GraphNodeKind = 'input' | 'output' | 'and' | 'or' | 'module';
+export type GraphNodeKind =
+  | 'input'
+  | 'output'
+  | 'and'
+  | 'or'
+  | 'concat'
+  | 'divide'
+  | 'module';
 
 export interface GraphPort {
   name: string;
@@ -36,6 +43,22 @@ export interface GateGraphNode extends BaseGraphNode {
   outputPort: string;
 }
 
+export interface ConcatGraphNode extends BaseGraphNode {
+  kind: 'concat';
+  leftWidth: number;
+  rightWidth: number;
+  inputPorts: ['a', 'b'];
+  outputPort: 'y';
+}
+
+export interface DivideGraphNode extends BaseGraphNode {
+  kind: 'divide';
+  highWidth: number;
+  lowWidth: number;
+  inputPort: 'in';
+  outputPorts: ['hi', 'lo'];
+}
+
 export interface ModuleGraphNode extends BaseGraphNode {
   kind: 'module';
   moduleName: string;
@@ -47,6 +70,8 @@ export type GraphNode =
   | InputGraphNode
   | OutputGraphNode
   | GateGraphNode
+  | ConcatGraphNode
+  | DivideGraphNode
   | ModuleGraphNode;
 
 export interface GraphEdge {

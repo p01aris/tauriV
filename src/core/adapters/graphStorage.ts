@@ -48,6 +48,8 @@ function nodeTypeFromNode(node: any): string {
   if (node.nodeKind === "output") return "OutputNode";
   if (node.nodeKind === "and") return "AndGateNode";
   if (node.nodeKind === "or") return "OrGateNode";
+  if (node.nodeKind === "concat") return "ConcatNode";
+  if (node.nodeKind === "divide") return "DivideNode";
   if (node.nodeKind === "module" && node.verilogModuleName) {
     return `${String(node.verilogModuleName)}Node`;
   }

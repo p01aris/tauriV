@@ -66,6 +66,32 @@ function nodeToGraphNode(node: any): GraphNode {
     };
   }
 
+  if (nodeKind === 'concat') {
+    return {
+      id,
+      kind: 'concat',
+      label,
+      instanceName,
+      leftWidth: readNumberControl(node, 'leftWidth', 1),
+      rightWidth: readNumberControl(node, 'rightWidth', 1),
+      inputPorts: ['a', 'b'],
+      outputPort: 'y'
+    };
+  }
+
+  if (nodeKind === 'divide') {
+    return {
+      id,
+      kind: 'divide',
+      label,
+      instanceName,
+      highWidth: readNumberControl(node, 'highWidth', 1),
+      lowWidth: readNumberControl(node, 'lowWidth', 1),
+      inputPort: 'in',
+      outputPorts: ['hi', 'lo']
+    };
+  }
+
   if (nodeKind === 'module') {
     const inputs =
       node.verilogInputs?.map((port: any) => ({

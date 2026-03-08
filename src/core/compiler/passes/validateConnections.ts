@@ -31,6 +31,32 @@ function getPortInfo(node: GraphNode, portName: string): PortInfo | null {
     return null;
   }
 
+  if (node.kind === 'concat') {
+    if (portName === node.inputPorts[0]) {
+      return { direction: 'input', width: node.leftWidth };
+    }
+    if (portName === node.inputPorts[1]) {
+      return { direction: 'input', width: node.rightWidth };
+    }
+    if (portName === node.outputPort) {
+      return { direction: 'output', width: node.leftWidth + node.rightWidth };
+    }
+    return null;
+  }
+
+  if (node.kind === 'divide') {
+    if (portName === node.inputPort) {
+      return { direction: 'input', width: node.highWidth + node.lowWidth };
+    }
+    if (portName === node.outputPorts[0]) {
+      return { direction: 'output', width: node.highWidth };
+    }
+    if (portName === node.outputPorts[1]) {
+      return { direction: 'output', width: node.lowWidth };
+    }
+    return null;
+  }
+
   if (node.kind !== 'module') {
     return null;
   }

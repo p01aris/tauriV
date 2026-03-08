@@ -18,6 +18,20 @@ export function allocateNets(graph: GraphDocument): NetMap {
       return;
     }
 
+    if (node.kind === 'concat') {
+      const instance = sanitizeIdentifier(node.instanceName, `inst_${node.id}`);
+      netMap[makePortKey(node.id, node.outputPort)] = `w_${instance}_${node.outputPort}`;
+      return;
+    }
+
+    if (node.kind === 'divide') {
+      const instance = sanitizeIdentifier(node.instanceName, `inst_${node.id}`);
+      node.outputPorts.forEach((portName) => {
+        netMap[makePortKey(node.id, portName)] = `w_${instance}_${portName}`;
+      });
+      return;
+    }
+
     if (node.kind === 'module') {
       const instance = sanitizeIdentifier(node.instanceName, `inst_${node.id}`);
       node.outputs.forEach((port) => {

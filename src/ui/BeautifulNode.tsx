@@ -21,6 +21,40 @@ function getNumberControlValue(data: any, key: string, fallback: number): number
 }
 
 function getPortWidth(data: any, side: "input" | "output", portKey: string): number {
+  if (data?.nodeKind === "concat") {
+    const leftWidth = getNumberControlValue(data, "leftWidth", 1);
+    const rightWidth = getNumberControlValue(data, "rightWidth", 1);
+    if (side === "input") {
+      if (portKey === "a") {
+        return leftWidth;
+      }
+      if (portKey === "b") {
+        return rightWidth;
+      }
+    }
+    if (side === "output" && portKey === "y") {
+      return leftWidth + rightWidth;
+    }
+    return 1;
+  }
+
+  if (data?.nodeKind === "divide") {
+    const highWidth = getNumberControlValue(data, "highWidth", 1);
+    const lowWidth = getNumberControlValue(data, "lowWidth", 1);
+    if (side === "input" && portKey === "in") {
+      return highWidth + lowWidth;
+    }
+    if (side === "output") {
+      if (portKey === "hi") {
+        return highWidth;
+      }
+      if (portKey === "lo") {
+        return lowWidth;
+      }
+    }
+    return 1;
+  }
+
   if (data?.nodeKind === "module") {
     const ports = side === "input" ? data?.verilogInputs : data?.verilogOutputs;
     const match = Array.isArray(ports)

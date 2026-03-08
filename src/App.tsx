@@ -26,7 +26,9 @@ const BUILTIN_NODE_TYPE_NAMES = [
   "InputNode",
   "OutputNode",
   "AndGateNode",
-  "OrGateNode"
+  "OrGateNode",
+  "ConcatNode",
+  "DivideNode"
 ] as const;
 
 const DEFAULT_PROJECT_PATH = "/Volumes/External/src/tauriV";
