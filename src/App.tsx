@@ -22,6 +22,7 @@ import {
   runVerilogSimulation,
   scanVerilogModules
 } from "./tauri-adapter/verilogService";
+import { AppView } from "./ui/AppView";
 import "./App.css";
 
 const BUILTIN_NODE_TYPE_NAMES = [
@@ -529,294 +530,57 @@ endmodule`
   );
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div className="topbar-title-wrap">
-          <h1 className="topbar-title">Flow Verilog Studio</h1>
-          <p className="topbar-subtitle">Design Logic Visually, Compile Hardware Reliably.</p>
-        </div>
-        <div className="topbar-actions">
-          <button
-            className="btn btn-ghost"
-            onClick={handleSaveGraph}
-            disabled={isBootstrapping}
-          >
-            Save Graph
-          </button>
-          <button
-            className="btn btn-ghost"
-            onClick={handleRequestLoadGraph}
-            disabled={isBootstrapping}
-          >
-            Load Graph
-          </button>
-          <button
-            className="btn btn-accent"
-            onClick={handleGenerate}
-            disabled={isBootstrapping || isCompiling}
-          >
-            {isCompiling ? "Compiling..." : "Compile Graph"}
-          </button>
-          <button
-            className="btn btn-ghost"
-            onClick={handleRunSimulation}
-            disabled={isBootstrapping || isSimulating}
-          >
-            {isSimulating ? "Simulating..." : "Run Simulation"}
-          </button>
-        </div>
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept=".json,.flowgraph.json"
-          style={{ display: "none" }}
-          onChange={handleLoadGraphFile}
-        />
-      </header>
-
-      <section className="status-strip">
-        <span className="status-item status-primary">{statusMessage}</span>
-        <span className="status-item">
-          Scan Dir: <code>{scanDirectory}</code>
-        </span>
-        {graphStats && (
-          <span className="status-item">
-            Graph: {graphStats.nodes} nodes / {graphStats.edges} edges
-          </span>
-        )}
-      </section>
-
-      <main className="workspace-grid">
-        <aside className="panel panel-left">
-          <div className="panel-group">
-            <h2 className="panel-title">Project Setup</h2>
-            <label className="field">
-              <span className="field-label">Project Path</span>
-              <div className="field-input-row">
-                <input
-                  className="field-input"
-                  value={projectPath}
-                  onChange={(event) => setProjectPath(event.target.value)}
-                  placeholder="/absolute/project/path"
-                />
-                <button
-                  className="btn btn-ghost field-inline-btn"
-                  type="button"
-                  onClick={() => {
-                    void handlePickProjectFolder();
-                  }}
-                  title="Pick project folder"
-                >
-                  Browse
-                </button>
-              </div>
-            </label>
-            <label className="field">
-              <span className="field-label">Verilog Scan Folder</span>
-              <div className="field-input-row">
-                <input
-                  className="field-input"
-                  value={scanFolderPath}
-                  onChange={(event) => setScanFolderPath(event.target.value)}
-                  placeholder="src/verilog_module"
-                />
-                <button
-                  className="btn btn-ghost field-inline-btn"
-                  type="button"
-                  onClick={() => {
-                    void handlePickScanFolder();
-                  }}
-                  title="Pick scan folder"
-                >
-                  Browse
-                </button>
-              </div>
-            </label>
-            <label className="field">
-              <span className="field-label">Top Module Name</span>
-              <input
-                className="field-input"
-                value={topModuleName}
-                onChange={(event) => setTopModuleName(event.target.value)}
-                placeholder="TopLevelModule"
-              />
-            </label>
-            <button
-              className="btn btn-accent"
-              onClick={handleScanModules}
-              disabled={isScanningModules}
-            >
-              {isScanningModules ? "Scanning..." : "Scan Modules"}
-            </button>
-            {loadingError && <p className="text-error">{loadingError}</p>}
-          </div>
-
-          <div className="panel-group node-library-group">
-            <h2 className="panel-title">Node Library</h2>
-            <p className="panel-meta">
-              Right-click menu in editor now shows only built-in nodes.
-            </p>
-            <div className="tree-view">
-              <div className="tree-scroll">
-                <ul className="tree-root">
-                  <li className="tree-branch">
-                    <button
-                      className="tree-branch-toggle"
-                      onClick={() => {
-                        toggleLibraryBranch("builtIn");
-                      }}
-                    >
-                      <span className="tree-arrow">
-                        {libraryExpanded.builtIn ? "▾" : "▸"}
-                      </span>
-                      <span className="tree-branch-label">
-                        Built-in Library ({builtinNodeTypes.length})
-                      </span>
-                    </button>
-                    {libraryExpanded.builtIn && (
-                      <ul className="tree-children">
-                        {builtinNodeTypes.map((name) => {
-                          const label = name.replace("Node", "");
-                          return (
-                            <li key={name} className="tree-leaf-wrap">
-                              <button
-                                className="tree-leaf-btn"
-                                onClick={() => {
-                                  void handleAddNode(name);
-                                }}
-                              >
-                                + {label}
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ul>
-                    )}
-                  </li>
-
-                  <li className="tree-branch">
-                    <button
-                      className="tree-branch-toggle"
-                      onClick={() => {
-                        toggleLibraryBranch("modules");
-                      }}
-                    >
-                      <span className="tree-arrow">
-                        {libraryExpanded.modules ? "▾" : "▸"}
-                      </span>
-                      <span className="tree-branch-label">
-                        Loaded Modules ({moduleNodeTypes.length})
-                      </span>
-                    </button>
-                    {libraryExpanded.modules && (
-                      <ul className="tree-children">
-                        {moduleNodeTypes.length === 0 ? (
-                          <li className="tree-empty">No module nodes loaded.</li>
-                        ) : (
-                          moduleNodeTypes.map((name) => {
-                            const label = name.replace("Node", "");
-                            return (
-                              <li key={name} className="tree-leaf-wrap">
-                                <button
-                                  className="tree-leaf-btn"
-                                  onClick={() => {
-                                    void handleAddNode(name);
-                                  }}
-                                >
-                                  + {label}
-                                </button>
-                              </li>
-                            );
-                          })
-                        )}
-                      </ul>
-                    )}
-                  </li>
-                </ul>
-              </div>
-            </div>
-          </div>
-        </aside>
-
-        <section className="panel panel-center">
-          <div className="panel-title-row">
-            <h2 className="panel-title">Graph Editor</h2>
-            <span className="panel-meta">
-              Right panel shows compiled Verilog and simulation logs.
-            </span>
-          </div>
-          <div
-            className={`editor-surface ${isBootstrapping ? "editor-loading" : ""}`}
-            ref={containerRef}
-          />
-        </section>
-
-        <aside className="panel panel-right">
-          <div className="panel-group">
-            <h2 className="panel-title">Diagnostics ({diagnostics.length})</h2>
-            <div className="diagnostic-list">
-              {diagnostics.length === 0 && (
-                <p className="panel-meta">No diagnostics.</p>
-              )}
-              {diagnostics.map((diagnostic, index) => (
-                <div
-                  key={`${diagnostic.code}-${index}`}
-                  className={`diagnostic-item ${
-                    diagnostic.severity === "error"
-                      ? "diagnostic-error"
-                      : "diagnostic-warning"
-                  }`}
-                >
-                  <div className="diagnostic-code">{diagnostic.code}</div>
-                  <div>{diagnostic.message}</div>
-                </div>
-              ))}
-              {hasErrors && (
-                <div className="diagnostic-hint">
-                  Compile output is hidden while errors exist.
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="panel-group">
-            <h2 className="panel-title">Generated Verilog</h2>
-            <pre className="code-box generated-verilog-box">
-              <code>
-                {generatedCode || "// Compile graph to see generated Verilog"}
-              </code>
-            </pre>
-          </div>
-
-          <div className="panel-group">
-            <h2 className="panel-title">Testbench</h2>
-            <textarea
-              className="code-input"
-              value={testbenchCode}
-              onChange={(event) => setTestbenchCode(event.target.value)}
-              spellCheck={false}
-            />
-          </div>
-
-          <div className="panel-group">
-            <h2 className="panel-title">Simulation Output</h2>
-            <pre className="code-box">
-              <code>{simulationOutput || "// Run simulation to see output"}</code>
-            </pre>
-            {simulationError && (
-              <pre className="code-box code-error">
-                <code>{simulationError}</code>
-              </pre>
-            )}
-            {simulationWorkDir && (
-              <p className="panel-meta">
-                Workdir: <code>{simulationWorkDir}</code>
-              </p>
-            )}
-          </div>
-        </aside>
-      </main>
-    </div>
+    <AppView
+      containerRef={containerRef}
+      fileInputRef={fileInputRef}
+      statusMessage={statusMessage}
+      scanDirectory={scanDirectory}
+      graphStats={graphStats}
+      isBootstrapping={isBootstrapping}
+      isCompiling={isCompiling}
+      isSimulating={isSimulating}
+      isScanningModules={isScanningModules}
+      projectPath={projectPath}
+      scanFolderPath={scanFolderPath}
+      topModuleName={topModuleName}
+      loadingError={loadingError}
+      libraryExpanded={libraryExpanded}
+      builtinNodeTypes={builtinNodeTypes}
+      moduleNodeTypes={moduleNodeTypes}
+      diagnostics={diagnostics}
+      hasErrors={hasErrors}
+      generatedCode={generatedCode}
+      testbenchCode={testbenchCode}
+      simulationOutput={simulationOutput}
+      simulationError={simulationError}
+      simulationWorkDir={simulationWorkDir}
+      onSaveGraph={handleSaveGraph}
+      onRequestLoadGraph={handleRequestLoadGraph}
+      onCompile={handleGenerate}
+      onRunSimulation={() => {
+        void handleRunSimulation();
+      }}
+      onLoadGraphFile={(event) => {
+        void handleLoadGraphFile(event);
+      }}
+      onProjectPathChange={setProjectPath}
+      onScanFolderPathChange={setScanFolderPath}
+      onTopModuleNameChange={setTopModuleName}
+      onPickProjectFolder={() => {
+        void handlePickProjectFolder();
+      }}
+      onPickScanFolder={() => {
+        void handlePickScanFolder();
+      }}
+      onScanModules={() => {
+        void handleScanModules();
+      }}
+      onToggleLibraryBranch={toggleLibraryBranch}
+      onAddNode={(nodeTypeName) => {
+        void handleAddNode(nodeTypeName);
+      }}
+      onTestbenchCodeChange={setTestbenchCode}
+    />
   );
 }
 
